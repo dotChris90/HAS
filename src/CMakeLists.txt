@@ -10,6 +10,10 @@ add_executable(main
         main.cpp
 )
 
+add_executable(can_server
+        CANServer.cpp
+)       
+
 add_executable(client
         client.cpp
         serial.cpp
@@ -19,6 +23,13 @@ target_link_libraries(main
         open62541::open62541
         rt
 )
+
+
+target_link_libraries(can_server 
+        open62541::open62541
+        rt
+)
+
 
 target_link_libraries(client 
         open62541::open62541

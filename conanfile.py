@@ -17,6 +17,7 @@ class MinExConan(ConanFile):
 
     def requirements(self):
         self.requires("open62541/1.2.2")
+        self.options["open62541"].discovery = "multicast,semaphore"
         self.options["open62541"].shared = True
 
     def imports(self):
