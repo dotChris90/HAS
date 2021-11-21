@@ -11,6 +11,7 @@
 #include <signal.h>
 #include <chrono>
 #include <string>
+#include <cstdlib>
 
 static std::string *topic;
 
@@ -21,7 +22,7 @@ periodicCallback(UA_Server *server, void *data) {
     int size_can_if = sizeof(interfaces::CANInterface);
     int res = ftruncate(fd,size_can_if);
     auto can_0 = (interfaces::CANInterface*) mmap(NULL,size_can_if,PROT_WRITE,MAP_SHARED,fd,0);
-    can_0->Id = can_0->Id++;
+    can_0->Id = rand() % 100;
     can_0->Data = std::chrono::duration_cast< std::chrono::milliseconds>( std::chrono::system_clock::now().time_since_epoch()).count();
 
     UA_NodeId node = UA_NODEID_NUMERIC(1,62541 );
