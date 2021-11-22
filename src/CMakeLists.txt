@@ -14,8 +14,8 @@ add_executable(can_server
         CANServer.cpp
 )       
 
-add_executable(can_server_1
-        CANServer_1.cpp
+add_executable(location_server
+        LocationServer.cpp
 )       
 
 add_executable(client
@@ -34,12 +34,13 @@ target_link_libraries(can_server
         rt
 )
 
-target_link_libraries(can_server_1
+target_link_libraries(location_server
         open62541::open62541
         rt
 )
 
 target_link_libraries(client 
         open62541::open62541
+        pthread
         rt
 )

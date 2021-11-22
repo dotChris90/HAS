@@ -18,9 +18,17 @@ namespace bla
     std::string serial::serialData(std::string type, void* data) 
     {
         std::string bla = "";
-        if (type.compare("/TEST") == 0) 
+        if (type.compare("/SHM-LOC") == 0) 
         {
             location* loc = (location*)data;
+            bla += "{\"Type\":\"LOC-READ\",";
+            bla += "\"x\":";
+            bla += "\"" + std::to_string(loc->x) + "\",";
+            bla += "\"y\":";
+            bla += "\"" + std::to_string(loc->y) + "\",";
+            bla += "\"z\":";
+            bla += "\"" + std::to_string(loc->z) + "\"";
+            bla += "}";
             bla += "x->";
             bla += std::to_string(loc->x);
             bla += ";";
