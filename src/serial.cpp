@@ -41,6 +41,16 @@ namespace bla
             bla += "\"" + std::to_string(can_if->Data) + "\"";
             bla += "}";
         }
+        if (type.compare("/SHM-CAN_1") == 0)
+        {
+            interfaces::CANInterface* can_if = (interfaces::CANInterface*)data;
+            bla += "{\"Type\":\"CAN_READ_1\",";
+            bla += "\"id\":";
+            bla += "\":DDDDDD" + std::to_string(can_if->Id) + "\",";
+            bla += "\"data\":";
+            bla += "\"" + std::to_string(can_if->Data) + "\"";
+            bla += "}";
+        }
         return bla;
     }
 

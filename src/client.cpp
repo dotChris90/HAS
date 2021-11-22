@@ -30,13 +30,21 @@ static void* adresse;
 int main(void) {
 
     UA_Client *client = UA_Client_new();
+    UA_Client *client2 = UA_Client_new();
     UA_ClientConfig_setDefault(UA_Client_getConfig(client));
+    UA_ClientConfig_setDefault(UA_Client_getConfig(client2));
 
     UA_StatusCode retval = UA_Client_connect(client, "opc.tcp://localhost:4840");
     if(retval != UA_STATUSCODE_GOOD) {
         UA_Client_delete(client);
         return (int)retval;
     }
+    retval = UA_Client_connect(client2, "opc.tcp://localhost:4321");
+    if(retval != UA_STATUSCODE_GOOD) {
+        UA_Client_delete(client);
+        return (int)retval;
+    }
+    
 
     // section to try out converting between OPC-UA types and Std types
     // node_ids must be known 
@@ -77,8 +85,21 @@ int main(void) {
     char* convert = (char*)UA_malloc(sizeof(char)*topic.length+1);
     memcpy(convert, topic.data, topic.length );
     convert[topic.length] = '\0';
-    
     std::string topic_ = std::string(convert);
+    delete convert;
+
+    if_name = UA_STRING("CAN_1");
+    UA_Variant_setScalarCopy(&input[1], &if_name, &UA_TYPES[UA_TYPES_STRING]);
+    retval = UA_Client_call(client2, node_obj, node_meth, 2, input, &outputSize, &output);
+    UA_String topic_2 =  *(UA_String *) output[0].data;
+    UA_Int64 size_struct_2 = *(UA_Int64 *) output[1].data;
+
+    // ToDo : find better way for UA_STRING --> std::string -.- 
+    convert = (char*)UA_malloc(sizeof(char)*topic_2.length+1);
+    memcpy(convert, topic_2.data, topic_2.length );
+    convert[topic_2.length] = '\0';
+    std::string topic_2_ = std::string(convert);
+    delete convert;
     
     while (true)
     {
@@ -88,6 +109,14 @@ int main(void) {
         auto data = bla::serial::serialData(topic_,addr);
         std::cout << "I check Interface behind shm_location " << topic_ << " ... but i dont know what structure is ";
         std::cout << data << std::endl;
+        
+        int fd2 = shm_open(topic_2_.c_str(), O_RDWR , S_IRUSR | S_IWUSR);
+        res = ftruncate(fd2,size_struct_2);
+        void* addr2 = mmap(NULL,size_struct_2,PROT_WRITE,MAP_SHARED,fd2,0);
+        auto data2 = bla::serial::serialData(topic_2_,addr2);
+        std::cout << "I check Interface behind shm_location " << topic_2_ << " ... but i dont know what structure is ";
+        std::cout << data2 << std::endl;
+
         std::this_thread::sleep_for(2000ms);
     }
 
