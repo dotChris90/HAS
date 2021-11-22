@@ -1,6 +1,7 @@
 
 #include "serial.hpp"
 #include "interface.h"
+#include "CANInterface.hpp"
 
 namespace bla
 {
@@ -29,6 +30,16 @@ namespace bla
             bla += "z->";
             bla += std::to_string(loc->z);
             bla += ";";
+        }
+        if (type.compare("/SHM-CAN") == 0) 
+        {
+            interfaces::CANInterface* can_if = (interfaces::CANInterface*)data;
+            bla += "{\"Type\":\"CAN_READ\",";
+            bla += "\"id\":";
+            bla += "\"" + std::to_string(can_if->Id) + "\",";
+            bla += "\"data\":";
+            bla += "\"" + std::to_string(can_if->Data) + "\"";
+            bla += "}";
         }
         return bla;
     }

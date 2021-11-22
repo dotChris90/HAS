@@ -15,10 +15,17 @@
 
 static std::string *topic;
 
+class Buffer {
+    public:
+    static std::string topic;
+};
+
+std::string Buffer::topic = "";
+
 static void
 periodicCallback(UA_Server *server, void *data) {
 
-    int fd = shm_open(topic->c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    int fd = shm_open(Buffer::topic.c_str(), O_RDWR , S_IRUSR | S_IWUSR);
     int size_can_if = sizeof(interfaces::CANInterface);
     int res = ftruncate(fd,size_can_if);
     auto can_0 = (interfaces::CANInterface*) mmap(NULL,size_can_if,PROT_WRITE,MAP_SHARED,fd,0);
@@ -50,10 +57,10 @@ activeCycleIfMethodCallback(UA_Server *server,
     UA_String* if_name = (UA_String*)input[1].data;
 
     std::string shm_topic = std::string("/SHM-") + std::string((char *)if_name->data);  
-    topic = &shm_topic;
-    UA_String shm_topic_ua = UA_STRING_ALLOC(shm_topic.c_str());
+    Buffer::topic = shm_topic;
+    UA_String shm_topic_ua = UA_STRING_ALLOC(Buffer::topic.c_str());
 
-    int fd = shm_open(shm_topic.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    int fd = shm_open(Buffer::topic.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     int size_can_if = sizeof(interfaces::CANInterface);
     int res = ftruncate(fd,size_can_if);
     auto can_0 = (interfaces::CANInterface*) mmap(NULL,size_can_if,PROT_WRITE,MAP_SHARED,fd,0);
