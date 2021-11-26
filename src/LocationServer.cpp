@@ -15,7 +15,7 @@
 #include <string>
 #include <cstdlib>
 
-#define DISCOVERY_SERVER_ENDPOINT "opc.tcp://localhost:4840"
+#define DISCOVERY_SERVER_ENDPOINT "opc.tcp://localhost:4444"
 
 static std::string *topic;
 
@@ -49,7 +49,7 @@ activeCycleIfMethodCallback(UA_Server *server,
     int32_t cycleTime = *(int*)(UA_Int32*)input[0].data;
     UA_String* if_name = (UA_String*)input[1].data;
 
-    std::string shm_topic = std::string("/SHM-") + std::string((char *)if_name->data);  
+    std::string shm_topic = std::string("/SHM-") + std::string((char *)"LOC");  
     Buffer::topic = shm_topic;
     UA_String shm_topic_ua = UA_STRING_ALLOC(Buffer::topic.c_str());
 
@@ -166,16 +166,24 @@ int main(void) {
     signal(SIGTERM, stopHandler);
 
     UA_Server *server = UA_Server_new();
-    UA_ServerConfig_setMinimal(UA_Server_getConfig(server),4321,nullptr);
+    auto config = UA_Server_getConfig(server);
+    UA_ServerConfig_setMinimal(config,4321,nullptr);
+    UA_String_clear(&config->applicationDescription.applicationUri);
+        config->applicationDescription.applicationUri = 
+            UA_String_fromChars("localhost:4321/");
+    
 
     addmanualCAN(server);
     addActiveCycleIfMMethod(server);
 
-    //UA_Client *clientRegister = UA_Client_new();
-    //UA_ClientConfig_setDefault(UA_Client_getConfig(clientRegister));
+    UA_Client *clientRegister = UA_Client_new();
+    UA_ClientConfig_setDefault(UA_Client_getConfig(clientRegister));
+    UA_StatusCode retval44 = UA_Client_connect(clientRegister, "opc.tcp://localhost:4444");
 
-    //UA_UInt64 callbackId;
-    //UA_StatusCode retval =
+    UA_Server_register_discovery(server, clientRegister,"/tmp/bla");
+
+    UA_UInt64 callbackId;
+    //UA_StatusCode retval2 =
     //    UA_Server_addPeriodicServerRegisterCallback(server, clientRegister, DISCOVERY_SERVER_ENDPOINT,
     //                                                10 * 60 * 1000, 500, &callbackId);
     

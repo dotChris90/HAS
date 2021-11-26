@@ -21,6 +21,9 @@ add_executable(location_server
 add_executable(client
         client.cpp
         serial.cpp
+        DiscoveryServer.cpp
+        ServerConnector.cpp
+        utils.cpp
 )
 
 target_link_libraries(main 
