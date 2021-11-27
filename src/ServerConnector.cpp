@@ -18,8 +18,8 @@ namespace HAS
 
     void ServerConnector::SetConnection(const std::string& connection_url) 
     {
-        this->_client = UA_Client_new();
-        UA_ClientConfig_setDefault(UA_Client_getConfig(this->_client));
+        //this->_client = UA_Client_new();
+        //UA_(UA_Client_getConfig(this->_client));
         this->_url = connection_url;
     }
     
@@ -30,8 +30,10 @@ namespace HAS
     
     void ServerConnector::Connect()
     {
+        this->_client = UA_Client_new();
+        UA_ClientConfig_setDefault(UA_Client_getConfig(this->_client));
         UA_StatusCode retval = UA_Client_connect(this->_client, this->_url.c_str());
-
+    
         const UA_NodeId node_obj = UA_NODEID_NUMERIC(1,62540);
         const UA_NodeId node_meth = UA_NODEID_NUMERIC(1,62543);
         UA_QualifiedName ua_name;

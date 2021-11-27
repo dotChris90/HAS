@@ -15,6 +15,9 @@
 #include <string>
 #include <cstdlib>
 
+#include <sys/file.h>
+#include <errno.h>
+
 #define DISCOVERY_SERVER_ENDPOINT "opc.tcp://localhost:4444"
 
 static std::string *topic;
@@ -162,6 +165,9 @@ static void stopHandler(int sign) {
 
 int main(void) {
     
+    int pid_file = open("/tmp/location.pid", O_CREAT | O_RDWR, 0666);
+    int rc = flock(pid_file, LOCK_EX | LOCK_NB);
+
     signal(SIGINT, stopHandler);
     signal(SIGTERM, stopHandler);
 

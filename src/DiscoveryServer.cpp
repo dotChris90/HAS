@@ -56,14 +56,13 @@ namespace HAS
                 ServerConnector new_server;
                 std::string semaphore = FromUA2String(registeredServer->semaphoreFilePath);
                 new_server.SetConnection("opc.tcp://" + FromUA2String(registeredServer->serverUri));
-                auto watcher = new filewatch::FileWatch<std::string>(
+                new_server.Watch = new filewatch::FileWatch<std::string>(
                     semaphore,
                     [&discovery](const std::string& path, const filewatch::Event change_type)
                     {
                         discovery->KnownServers.erase(path);
                     }   
                 );
-                new_server.Watch = watcher;
                 new_server.SetSemaphore(semaphore);
                 discovery->KnownServers[semaphore] = new_server;
                 discovery->KnownServers[semaphore].Connect();
