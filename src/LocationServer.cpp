@@ -10,6 +10,8 @@
 #include <fcntl.h>
 #include "interface.h"
 
+#include <thread>
+
 #include <signal.h>
 #include <chrono>
 #include <string>
@@ -17,6 +19,9 @@
 
 #include <sys/file.h>
 #include <errno.h>
+
+using namespace std::chrono_literals;
+
 
 #define DISCOVERY_SERVER_ENDPOINT "opc.tcp://localhost:4444"
 
@@ -176,25 +181,34 @@ int main(void) {
     UA_ServerConfig_setMinimal(config,4321,nullptr);
     UA_String_clear(&config->applicationDescription.applicationUri);
         config->applicationDescription.applicationUri = 
-            UA_String_fromChars("localhost:4321/");
+            UA_String_fromChars("localhost:4321");
     
 
     addmanualCAN(server);
     addActiveCycleIfMMethod(server);
 
+    std::thread main_loop(
+        [&]() {
+            UA_StatusCode retval = UA_Server_run(server, &running);
+        }
+    );
+    main_loop.detach();
+
+    std::this_thread::sleep_for(5000ms);
+
     UA_Client *clientRegister = UA_Client_new();
     UA_ClientConfig_setDefault(UA_Client_getConfig(clientRegister));
     UA_StatusCode retval44 = UA_Client_connect(clientRegister, "opc.tcp://localhost:4444");
-
     UA_Server_register_discovery(server, clientRegister,"/tmp/bla");
-
-    UA_UInt64 callbackId;
-    //UA_StatusCode retval2 =
-    //    UA_Server_addPeriodicServerRegisterCallback(server, clientRegister, DISCOVERY_SERVER_ENDPOINT,
-    //                                                10 * 60 * 1000, 500, &callbackId);
+   
+    while(true)
+    {
+        if (running)
+            std::this_thread::sleep_for(1000ms);
+        else 
+            break;
+    }
     
-    UA_StatusCode retval = UA_Server_run(server, &running);
-
     UA_Server_delete(server);
-    return retval == UA_STATUSCODE_GOOD ? EXIT_SUCCESS : EXIT_FAILURE;
+    return 0;
 }

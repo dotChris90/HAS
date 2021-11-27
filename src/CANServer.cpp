@@ -14,6 +14,9 @@
 #include <chrono>
 #include <string>
 #include <cstdlib>
+#include <thread>
+
+using namespace std::chrono_literals;
 
 #define DISCOVERY_SERVER_ENDPOINT "opc.tcp://localhost:4444"
 
@@ -180,20 +183,26 @@ int main(void) {
     UA_ServerConfig_setMinimal(config,4322,nullptr);
     UA_String_clear(&config->applicationDescription.applicationUri);
         config->applicationDescription.applicationUri = 
-            UA_String_fromChars("localhost:4322/");
+            UA_String_fromChars("localhost:4322");
 
     addmanualCAN(server);
     addActiveCycleIfMMethod(server);
-    
+
+    std::this_thread::sleep_for(5000ms);
+
     UA_Client *clientRegister = UA_Client_new();
     UA_ClientConfig_setDefault(UA_Client_getConfig(clientRegister));
     UA_StatusCode retval44 = UA_Client_connect(clientRegister, "opc.tcp://localhost:4444");
-
     UA_Server_register_discovery(server, clientRegister,"/tmp/bla2");
-
-
-    UA_StatusCode retval = UA_Server_run(server, &running);
-
+   
+    while(true)
+    {
+        if (running)
+            std::this_thread::sleep_for(1000ms);
+        else 
+            break;
+    }
+    
     UA_Server_delete(server);
-    return retval == UA_STATUSCODE_GOOD ? EXIT_SUCCESS : EXIT_FAILURE;
+    return 0;
 }

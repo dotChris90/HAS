@@ -3,6 +3,7 @@
 #include <open62541/server_config_default.h>
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/types_generated.h>
+#include <sys/stat.h>
 #include "utils.hpp"
 
 using namespace std::chrono_literals;
@@ -54,16 +55,25 @@ namespace HAS
             {
                 DiscoveryServer* discovery = (DiscoveryServer*)data;
                 ServerConnector new_server;
+                struct stat buffer;   
                 std::string semaphore = FromUA2String(registeredServer->semaphoreFilePath);
+                if (stat (semaphore.c_str(), &buffer) != 0)
+                {
+                    return;
+                }
                 new_server.SetConnection("opc.tcp://" + FromUA2String(registeredServer->serverUri));
+                new_server.SetSemaphore(semaphore);
+                
                 new_server.Watch = new filewatch::FileWatch<std::string>(
                     semaphore,
-                    [&discovery](const std::string& path, const filewatch::Event change_type)
+                    [discovery](const std::string& path, const filewatch::Event change_type)
                     {
-                        discovery->KnownServers.erase(path);
+                        if (change_type == filewatch::Event::removed)
+                        {
+                            discovery->KnownServers["/tmp/" + path].online = false;
+                        }
                     }   
                 );
-                new_server.SetSemaphore(semaphore);
                 discovery->KnownServers[semaphore] = new_server;
                 discovery->KnownServers[semaphore].Connect();
             },

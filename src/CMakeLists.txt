@@ -35,11 +35,13 @@ target_link_libraries(main
 target_link_libraries(can_server 
         open62541::open62541
         rt
+        pthread
 )
 
 target_link_libraries(location_server
         open62541::open62541
         rt
+        pthread
 )
 
 target_link_libraries(client 

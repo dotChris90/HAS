@@ -155,7 +155,7 @@ int main(void)
         for(auto const& server : discovery.KnownServers)
         {
             auto server_connector = server.second;
-            if (server_connector.HasTopics())
+            if (server_connector.HasTopics() && server_connector.online )
             {
                 std::string topic;
                 int topic_size;

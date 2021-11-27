@@ -25,6 +25,7 @@ namespace HAS {
         ServerConnector(/* args */);
         ~ServerConnector();
         filewatch::FileWatch<std::string> * Watch;
+        bool online;
         void SetConnection(const std::string& connection_url);
         void SetSemaphore(const std::string& semaphore);
         void Connect();
