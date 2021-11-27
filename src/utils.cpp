@@ -1,6 +1,5 @@
 #include "utils.hpp"
 
-
 std::string FromUA2String(UA_String ua_string)
 {
     char* convert = (char*)UA_malloc(sizeof(char)*ua_string.length+1);

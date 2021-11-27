@@ -6,6 +6,8 @@
 #include <vector>
 #include <tuple>
 
+#include "FileWatch.hpp"
+
 namespace HAS {
     class ServerConnector
     {
@@ -22,6 +24,7 @@ namespace HAS {
     public:
         ServerConnector(/* args */);
         ~ServerConnector();
+        filewatch::FileWatch<std::string> * Watch;
         void SetConnection(const std::string& connection_url);
         void SetSemaphore(const std::string& semaphore);
         void Connect();
