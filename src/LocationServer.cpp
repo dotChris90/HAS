@@ -169,8 +169,15 @@ static void stopHandler(int sign) {
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "received ctrl-c");
     running = false;
     std::remove("/tmp/location"); 
+    shm_unlink("/TEST");    
+}
+
+void handler(int sig)
+{
+    running = false;
+    std::remove("/tmp/location"); 
     shm_unlink("/TEST");
-    
+    exit(0);
 }
 
 int main(void) {
@@ -179,6 +186,7 @@ int main(void) {
 
     signal(SIGINT, stopHandler);
     signal(SIGTERM, stopHandler);
+    signal(SIGSEGV, handler);
 
     UA_Server *server = UA_Server_new();
     auto config = UA_Server_getConfig(server);
@@ -199,6 +207,10 @@ int main(void) {
     main_loop.detach();
 
     std::this_thread::sleep_for(5000ms);
+
+    char *c = "Hello";
+
+    c[10] = 'z'; 
 
     UA_Client *clientRegister = UA_Client_new();
     UA_ClientConfig_setDefault(UA_Client_getConfig(clientRegister));
