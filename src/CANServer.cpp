@@ -13,6 +13,7 @@
 #include <signal.h>
 #include <chrono>
 #include <string>
+#include <fstream>
 #include <cstdlib>
 #include <thread>
 
@@ -168,12 +169,15 @@ void addmanualCAN(UA_Server *server) {
 
 static volatile UA_Boolean running = true;
 static void stopHandler(int sign) {
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "received ctrl-c");
+   UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "received ctrl-c");
     running = false;
+    std::remove("/tmp/can"); 
     shm_unlink("/TEST");
 }
 
 int main(void) {
+
+    bool ok = static_cast<bool>(std::ofstream("/tmp/can").put(' ')); //
     
     signal(SIGINT, stopHandler);
     signal(SIGTERM, stopHandler);
@@ -188,12 +192,19 @@ int main(void) {
     addmanualCAN(server);
     addActiveCycleIfMMethod(server);
 
+    std::thread main_loop(
+        [&]() {
+            UA_StatusCode retval = UA_Server_run(server, &running);
+        }
+    );
+    main_loop.detach();
+
     std::this_thread::sleep_for(5000ms);
 
     UA_Client *clientRegister = UA_Client_new();
     UA_ClientConfig_setDefault(UA_Client_getConfig(clientRegister));
     UA_StatusCode retval44 = UA_Client_connect(clientRegister, "opc.tcp://localhost:4444");
-    UA_Server_register_discovery(server, clientRegister,"/tmp/bla2");
+    UA_Server_register_discovery(server, clientRegister,"/tmp/can");
    
     while(true)
     {

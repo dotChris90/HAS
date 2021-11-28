@@ -5,6 +5,7 @@
 #include <open62541/client_highlevel.h>
 
 #include <iostream>
+#include <fstream>
 
 #include <sys/mman.h>
 #include <fcntl.h>
@@ -26,6 +27,8 @@ using namespace std::chrono_literals;
 #define DISCOVERY_SERVER_ENDPOINT "opc.tcp://localhost:4444"
 
 static std::string *topic;
+
+static int *pid_file;
 
 class Buffer {
     public:
@@ -165,13 +168,14 @@ static volatile UA_Boolean running = true;
 static void stopHandler(int sign) {
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "received ctrl-c");
     running = false;
+    std::remove("/tmp/location"); 
     shm_unlink("/TEST");
+    
 }
 
 int main(void) {
     
-    int pid_file = open("/tmp/location.pid", O_CREAT | O_RDWR, 0666);
-    int rc = flock(pid_file, LOCK_EX | LOCK_NB);
+    bool ok = static_cast<bool>(std::ofstream("/tmp/location").put(' ')); //
 
     signal(SIGINT, stopHandler);
     signal(SIGTERM, stopHandler);
@@ -199,7 +203,7 @@ int main(void) {
     UA_Client *clientRegister = UA_Client_new();
     UA_ClientConfig_setDefault(UA_Client_getConfig(clientRegister));
     UA_StatusCode retval44 = UA_Client_connect(clientRegister, "opc.tcp://localhost:4444");
-    UA_Server_register_discovery(server, clientRegister,"/tmp/bla");
+    UA_Server_register_discovery(server, clientRegister,"/tmp/location");
    
     while(true)
     {
